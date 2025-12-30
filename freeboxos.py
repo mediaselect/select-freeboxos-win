@@ -161,6 +161,7 @@ def build_url(use_https, server_ip, path=""):
     return full_url
 
 def scrub_event(event, hint):
+    """Redact sensitive fields from Sentry events before uploading."""
     sensitive_keys = ['password', 'secret', 'token', 'credential']
 
     def sanitize(value):
