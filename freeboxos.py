@@ -84,11 +84,11 @@ def find_element_with_retries(driver, by, value, retries=3, delay=1):
         try:
             return driver.find_element(by, value)
         except NoSuchElementException:
-            logging.error(
+            logger.error(
                 f"Attempt {attempt + 1}/{retries}: Le bouton programmer un enregistrement n'a pas été trouvé."
             )
             sleep(delay)
-    logging.error(
+    logger.error(
         "Impossible de trouver le bouton programmer un enregistrement après plusieurs tentatives."
     )
     driver.quit()
@@ -171,10 +171,10 @@ if CRYPTED_CREDENTIALS:
         FREEBOX_SERVER_IP = keyring.get_password("freeboxos", "username")
         ADMIN_PASSWORD = keyring.get_password("freeboxos", "password")
         if FREEBOX_SERVER_IP is None:
-            logging.error("Failed to retrieve 'username' from keyring for 'freeboxos'.")
+            logger.error("Failed to retrieve 'username' from keyring for 'freeboxos'.")
             sys.exit(1)
         if ADMIN_PASSWORD is None:
-            logging.error("Failed to retrieve 'password' from keyring for 'freeboxos'.")
+            logger.error("Failed to retrieve 'password' from keyring for 'freeboxos'.")
             sys.exit(1)
         sensitive_filter.update_patterns({
             "admin_password": ADMIN_PASSWORD,
@@ -182,8 +182,8 @@ if CRYPTED_CREDENTIALS:
         })
 
     except Exception as e:
-        logging.error("An error occurred while retrieving credentials from keyring.")
-        logging.error("Exception type: %s", type(e).__name__)
+        logger.error("An error occurred while retrieving credentials from keyring.")
+        logger.error("Exception type: %s", type(e).__name__)
         sys.exit(1)
 
 def run_freebox_operations():
@@ -195,7 +195,7 @@ def run_freebox_operations():
         title = get_website_title(url)
 
         if title != "Freebox OS":
-            logging.error(
+            logger.error(
                 "Imposible to connect to the Freebox server. Exit programme."
             )
             sys.exit(1)
@@ -206,13 +206,13 @@ def run_freebox_operations():
         ) as jsonfile:
             data_info_progs = json.load(jsonfile)
     except FileNotFoundError:
-        logging.error(
+        logger.error(
             "No info_progs.json file. Need to check curl command or "
             "internet connection. Exit programme."
         )
         sys.exit(1)
     except json.JSONDecodeError:
-        logging.error(
+        logger.error(
             "Invalid JSON data in info_progs.json file. The file may be empty or corrupted."
         )
         sys.exit(1)
@@ -223,7 +223,7 @@ def run_freebox_operations():
         ) as jsonfile:
             data = json.load(jsonfile)
     except FileNotFoundError:
-        logging.error(
+        logger.error(
             "No progs_to_record.json file. Exit programme."
         )
         sys.exit(1)
@@ -234,9 +234,9 @@ def run_freebox_operations():
     if len(data) == 0 or len(data_info_progs) == 0:
         try:
             shutil.copy(src_file, dst_file)
-            logging.info("No data to record programmes. Exit programme.")
+            logger.info("No data to record programmes. Exit programme.")
         except Exception as e:
-            logging.error(f"Failed to copy file: {e}")
+            logger.error(f"Failed to copy file: {e}")
         sys.exit()
 
 
@@ -263,13 +263,13 @@ def run_freebox_operations():
                 sleep(8)
             except WebDriverException as e:
                 if 'net::ERR_ADDRESS_UNREACHABLE' in e.msg:
-                    logging.error(
+                    logger.error(
                         "The programme cannot reach the Freebox server address. Exit programme."
                     )
                     driver.quit()
                     sys.exit(1)
                 elif 'ERR_CERT' in e.msg or 'SSL' in e.msg or 'certificate' in e.msg.lower():
-                    logging.error(
+                    logger.error(
                         "SSL/Certificate error occurred. If using HTTPS with self-signed certificate, "
                         "you may need to enable accept_insecure_certs in the code (line ~270). "
                         "Only do this for trusted local networks."
@@ -277,49 +277,49 @@ def run_freebox_operations():
                     driver.quit()
                     sys.exit(1)
                 else:
-                    logging.error("A WebDriverException occurred.")
-                    logging.error(f"Exception type: {type(e).__name__}")
+                    logger.error("A WebDriverException occurred.")
+                    logger.error(f"Exception type: {type(e).__name__}")
                     if FREEBOX_SERVER_IP[:3] == "192":
                         fail_ip_address = True
                     else:
-                        logging.error("Exiting the program.")
+                        logger.error("Exiting the program.")
                         driver.quit()
                         sys.exit(1)
             if fail_ip_address:
-                logging.info("fall back on mafreebox.freebox.fr url because ip address failed")
+                logger.info("fall back on mafreebox.freebox.fr url because ip address failed")
                 try:
                     url = build_url(HTTPS, "mafreebox.freebox.fr", "/login.php#Fbx.os.app.pvr.app")
                     driver.get(url)
                     sleep(8)
                 except WebDriverException as e:
                     if 'net::ERR_ADDRESS_UNREACHABLE' in e.msg:
-                        logging.error(
+                        logger.error(
                             "The programme cannot reach the address mafreebox.freebox.fr. Exit programme."
                         )
                         driver.quit()
                         sys.exit(1)
                     elif 'ERR_CERT' in e.msg or 'SSL' in e.msg or 'certificate' in e.msg.lower():
-                        logging.error(
+                        logger.error(
                             "SSL/Certificate error when connecting to mafreebox.freebox.fr. Exit programme."
                         )
                         driver.quit()
                         sys.exit(1)
                     else:
-                        logging.error("A WebDriverException occurred. Exiting the program.")
-                        logging.error(
+                        logger.error("A WebDriverException occurred. Exiting the program.")
+                        logger.error(
                             "The programme cannot reach the address mafreebox.freebox.fr. Exit programme."
                         )
-                        logging.error(f"Exception type: {type(e).__name__}")
+                        logger.error(f"Exception type: {type(e).__name__}")
                         driver.quit()
                         sys.exit(1)
 
             try:
                 login = driver.find_element("id", "fbx-password")
             except Exception as e:
-                logging.error(
+                logger.error(
                     "Cannot connect to Freebox OS. Exit programme.", exc_info=False
                 )
-                logging.error("Exception type: %s", type(e).__name__)
+                logger.error("Exception type: %s", type(e).__name__)
                 driver.quit()
                 sys.exit(1)
             sleep(1)
@@ -335,7 +335,7 @@ def run_freebox_operations():
                 invalid_password = driver.find_element(
                     By.XPATH, "//div[contains(text(), 'Identifiants invalides')]"
                 )
-                logging.error(
+                logger.error(
                     "Le mot de passe administrateur de la Freebox est invalide. "
                     "La programmation des enregistrements n'a pas "
                     "pu être réalisée. Merci de vérifier le mot de passe."
@@ -394,7 +394,7 @@ def run_freebox_operations():
                 try:
                     channel_number = CHANNELS_FREE[video["channel"]]
                 except KeyError:
-                    logging.error(
+                    logger.error(
                         "La chaine %s n'est pas "
                         "présente dans le fichier channels_free.py",
                         video["channel"]
@@ -419,8 +419,8 @@ def run_freebox_operations():
                     try:
                         programmer_enregistrements.click()
                     except ElementClickInterceptedException as e:
-                        logging.error("A ElementClickInterceptedException occurred.")
-                        logging.error(
+                        logger.error("A ElementClickInterceptedException occurred.")
+                        logger.error(
                             "Impossible de programmer les enregistrements. "
                             "Une fenêtre d'information empêche probablement "
                             "de pouvoir clicker sur le bouton programmer un "
@@ -452,7 +452,7 @@ def run_freebox_operations():
                         last_channel = channel_uuid.get_attribute("value")
                         n += 1
                         if n > 10:
-                            logging.error(
+                            logger.error(
                                 "Impossible de sélectionner la chaîne. Merci de "
                                 "vérifier si la chaine n° %s qui "
                                 "correspond à la chaine %s "
@@ -478,8 +478,8 @@ def run_freebox_operations():
                         try:
                             day_click = driver.find_element(By.XPATH, xpath)
                         except NoSuchElementException as e:
-                            logging.error("A NoSuchElementException occurred.")
-                            logging.error(
+                            logger.error("A NoSuchElementException occurred.")
+                            logger.error(
                                 "Impossible de trouver la date pour le programme %s"
                                 ". Le programme ne sera pas enregistré.", validate_video_title(video["title"])
                             )
@@ -500,7 +500,7 @@ def run_freebox_operations():
                                     lambda d: start_time.get_attribute("value") == start_hour + ":" + start_minute
                                 )
                             except:
-                                logging.error("Timeout: The input field did not update to the correct time.")
+                                logger.error("Timeout: The input field did not update to the correct time.")
 
                             actual_start = start_time.get_attribute("value")
 
@@ -508,7 +508,7 @@ def run_freebox_operations():
                                 break
                             loop_counter += 1
                             if loop_counter > 4:
-                                logging.error(
+                                logger.error(
                                     f"Impossible de saisir l'heure de début pour le programme {validate_video_title(video['title'])}. Le programme ne sera pas enregistré."
                                 )
                                 to_cancel = True
@@ -528,7 +528,7 @@ def run_freebox_operations():
                                     lambda d: end_time.get_attribute("value") == end_hour + ":" + end_minute
                                 )
                             except:
-                                logging.error("Timeout: The input field did not update to the correct time.")
+                                logger.error("Timeout: The input field did not update to the correct time.")
 
                             actual_end = end_time.get_attribute("value")
 
@@ -536,7 +536,7 @@ def run_freebox_operations():
                                 break
                             loop_counter += 1
                             if loop_counter > 4:
-                                logging.error(
+                                logger.error(
                                     f"Impossible de saisir l'heure de fin pour le programme {validate_video_title(video['title'])}. Le programme ne sera pas enregistré."
                                 )
                                 to_cancel = True
@@ -556,7 +556,7 @@ def run_freebox_operations():
                                     name_prog.send_keys(sanitized_title)
                                     sleep(1)
                                 except ElementNotInteractableException:
-                                    logging.error(
+                                    logger.error(
                                         "Une ElementNotInteractableException est apparue. "
                                         "Le titre de MEDIA select ne sera pas utilisé pour "
                                         "nommer le vidéo."
@@ -570,7 +570,7 @@ def run_freebox_operations():
                                 internal_error = driver.find_element(
                                     By.XPATH, "//div[contains(text(), 'Erreur interne')]"
                                 )
-                                logging.error(
+                                logger.error(
                                     "Une erreur interne de la Freebox est survenue. "
                                     "La programmation des enregistrements n'a pas "
                                     "pu être réalisée. Merci de vérifier si le disque "
@@ -587,10 +587,10 @@ def run_freebox_operations():
 
             shutil.copy(src_file, dst_file)
     except Exception as e:
-        logging.error("An unexpected error occurred:")
-        logging.error("Exception type: %s", type(e).__name__)
+        logger.error("An unexpected error occurred:")
+        logger.error("Exception type: %s", type(e).__name__)
         error_msg = str(e)[:100] if str(e) else "No error message"
-        logging.error("Exception message: %s", error_msg)
+        logger.error("Exception message: %s", error_msg)
     finally:
         ADMIN_PASSWORD = None
 
