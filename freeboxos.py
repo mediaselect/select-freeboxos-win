@@ -27,6 +27,7 @@ from selenium.common.exceptions import (
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.firefox import GeckoDriverManager
+from sentry_sdk.integrations.subprocess import SubprocessIntegration
 
 from channels_free import CHANNELS_FREE
 from module_freeboxos import get_website_title
@@ -126,6 +127,9 @@ if SENTRY_MONITORING_SDK:
         send_default_pii=False,
         include_local_variables=False,
         before_send=scrub_event,
+        integrations=[
+            SubprocessIntegration(enable=False),
+        ],
     )
     if sentry_sdk.Hub.current.client and sentry_sdk.Hub.current.client.options.get("traces_sample_rate", 0) > 0:
         sentry_sdk.profiler.start_profiler()
