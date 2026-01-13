@@ -9,7 +9,7 @@ class SensitiveDataFilter(logging.Filter):
     Features:
       - Redacts sensitive keywords (generic scrub)
       - Redacts exact secret values after update_patterns() is called
-      - Redacts absolute Windows filesystem paths (e.g. C:\Users\...)
+      - Redacts absolute Windows filesystem paths
       - Scrubs:
             * record.msg
             * record.args
