@@ -178,8 +178,14 @@ def scrub_event(event, hint):
         sanitize_dict(event["contexts"])
 
     if "breadcrumbs" in event:
+        filtered = []
         for crumb in event["breadcrumbs"].get("values", []):
+            if crumb.get("type") == "subprocess":
+                continue
             sanitize_dict(crumb)
+            filtered.append(crumb)
+
+        event["breadcrumbs"]["values"] = filtered
 
     if "extra" in event:
         if "sys.argv" in event["extra"]:
