@@ -144,10 +144,10 @@ try:
     with config_path.open(encoding="utf-8") as f:
         config = json.load(f)
 except FileNotFoundError:
-    logging.error("Missing config.json file")
+    logger.error("Missing config.json file")
     raise RuntimeError("Missing config.json")
 except json.JSONDecodeError:
-    logging.error("Invalid JSON in config.json")
+    logger.error("Invalid JSON in config.json")
     raise RuntimeError("Invalid config.json")
 
 ADMIN_PASSWORD = config.get("ADMIN_PASSWORD")

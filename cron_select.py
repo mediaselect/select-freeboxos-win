@@ -32,10 +32,6 @@ logger = logging.getLogger()
 logger.addHandler(log_handler)
 
 logger.setLevel(logging.INFO)
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s %(levelname)s %(message)s',
-                    datefmt='%d-%m-%Y %H:%M:%S',
-                    handlers=[log_handler])
 
 config_path = app_dir / "config.json"
 
@@ -43,10 +39,10 @@ try:
     with config_path.open(encoding="utf-8") as f:
         config = json.load(f)
 except FileNotFoundError:
-    logging.error("Missing config.json file")
+    logger.error("Missing config.json file")
     sys.exit(1)
 except json.JSONDecodeError:
-    logging.error("Invalid JSON in config.json")
+    logger.error("Invalid JSON in config.json")
     sys.exit(1)
 
 CRYPTED_CREDENTIALS = bool(config.get("CRYPTED_CREDENTIALS", False))
@@ -68,13 +64,13 @@ def remove_items(INFO_PROGS, INFO_PROGS_LAST, PROGS_TO_RECORD):
         with open(INFO_PROGS, 'r') as f:
             source_data = json.load(f)
     except FileNotFoundError:
-        logging.error(
+        logger.error(
         "No info_progs.json file. Need to check curl command or "
         "internet connection. Exit programme."
         )
         exit()
     except json.decoder.JSONDecodeError:
-        logging.error(
+        logger.error(
         "JSONDecodeError in info_progs.json file. Need to check curl command or "
         "internet connection. Exit programme."
         )
@@ -106,10 +102,10 @@ try:
     size_file = os.path.getsize(file_path)
     time_diff = datetime.now() - time_file
 except FileNotFoundError:
-    logging.warning(f"File not found: {file_path}")
+    logger.warning(f"File not found: {file_path}")
     to_download_info = True
 except Exception as e:
-    logging.error(f"An error occurred: {e}", exc_info=False)
+    logger.error(f"An error occurred: {e}", exc_info=False)
     to_download_info = True
 
 
@@ -124,10 +120,10 @@ if info_progs_last_mod_time is None or info_progs_last_mod_time.date() < datetim
                 password = keyring.get_password("media-select", "password")
 
                 if username is None or password is None:
-                    logging.error("Credentials not found in keyring. Please set them before proceeding.")
+                    logger.error("Credentials not found in keyring. Please set them before proceeding.")
                     raise ValueError("Missing credentials in keyring.")
             except keyring.errors.KeyringError as e:
-                logging.error(f"Keyring access error: {e}", exc_info=False)
+                logger.error(f"Keyring access error: {e}", exc_info=False)
                 raise ValueError("Failed to access the keyring.")
         else:
             username = MEDIA_EMAIL
@@ -140,12 +136,12 @@ if info_progs_last_mod_time is None or info_progs_last_mod_time.date() < datetim
             with open(INFO_PROGS, "w") as f:
                 f.write(response.text)
 
-            logging.info("Data downloaded with requests successfully.")
+            logger.info("Data downloaded with requests successfully.")
 
         except requests.RequestException as e:
-            logging.error(f"API request failed: {e}", exc_info=False)
+            logger.error(f"API request failed: {e}", exc_info=False)
         except ValueError as e:
-            logging.error(f"Error: {e}", exc_info=False)
+            logger.error(f"Error: {e}", exc_info=False)
 
         remove_items(INFO_PROGS, INFO_PROGS_LAST, PROGS_TO_RECORD)
 
@@ -153,5 +149,5 @@ if info_progs_last_mod_time is None or info_progs_last_mod_time.date() < datetim
             from freeboxos import run_freebox_operations
             run_freebox_operations()
         except Exception as e:
-            logging.exception(f"run_freebox_operations() failed: {e}", exc_info=False)
+            logger.exception(f"run_freebox_operations() failed: {e}", exc_info=False)
 
