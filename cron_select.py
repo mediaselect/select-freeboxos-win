@@ -106,10 +106,10 @@ try:
     size_file = os.path.getsize(file_path)
     time_diff = datetime.now() - time_file
 except FileNotFoundError:
-    print(f"File not found: {file_path}")
+    logging.warning(f"File not found: {file_path}")
     to_download_info = True
 except Exception as e:
-    print(f"An error occurred: {e}")
+    logging.error(f"An error occurred: {e}", exc_info=False)
     to_download_info = True
 
 
@@ -127,7 +127,7 @@ if info_progs_last_mod_time is None or info_progs_last_mod_time.date() < datetim
                     logging.error("Credentials not found in keyring. Please set them before proceeding.")
                     raise ValueError("Missing credentials in keyring.")
             except keyring.errors.KeyringError as e:
-                logging.error(f"Keyring access error: {e}")
+                logging.error(f"Keyring access error: {e}", exc_info=False)
                 raise ValueError("Failed to access the keyring.")
         else:
             username = MEDIA_EMAIL
@@ -143,9 +143,9 @@ if info_progs_last_mod_time is None or info_progs_last_mod_time.date() < datetim
             logging.info("Data downloaded with requests successfully.")
 
         except requests.RequestException as e:
-            logging.error(f"API request failed: {e}")
+            logging.error(f"API request failed: {e}", exc_info=False)
         except ValueError as e:
-            logging.error(f"Error: {e}")
+            logging.error(f"Error: {e}", exc_info=False)
 
         remove_items(INFO_PROGS, INFO_PROGS_LAST, PROGS_TO_RECORD)
 
@@ -153,5 +153,5 @@ if info_progs_last_mod_time is None or info_progs_last_mod_time.date() < datetim
             from freeboxos import run_freebox_operations
             run_freebox_operations()
         except Exception as e:
-            logging.exception(f"run_freebox_operations() failed: {e}")
+            logging.exception(f"run_freebox_operations() failed: {e}", exc_info=False)
 
