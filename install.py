@@ -1,4 +1,5 @@
 import getpass
+import json
 import keyring
 import logging
 import os
@@ -23,7 +24,6 @@ local_appdata = Path(os.getenv("LOCALAPPDATA", Path.home() / "AppData" / "Local"
 app_dir = local_appdata / "select_freeboxos"
 log_dir = app_dir / "logs"
 log_file = log_dir / "select_freeboxos.log"
-config_file = app_dir / "config.py"
 
 log_dir.mkdir(parents=True, exist_ok=True)
 
@@ -362,12 +362,7 @@ if go_on:
             "d'erreurs anonymisés pour améliorer les performances et corriger les "
             "bugs? (répondre par oui ou non) : ").strip().lower()
 
-    config_file = app_dir / "config.py"
-    template_conf_file = script_dir / "config_template.py"
-
-    if not os.path.exists(config_file):
-        shutil.copy(template_conf_file, config_file)
-        os.chmod(config_file, 0o640)
+    config_file = app_dir / "config.json"
 
     crypted = "no_se"
 
@@ -439,70 +434,28 @@ if go_on:
                     go_on = False
                     break
         if go_on:
-            params = ["ADMIN_PASSWORD",
-                    "FREEBOX_SERVER_IP",
-                    "MEDIA_SELECT_TITLES",
-                    "MAX_SIM_RECORDINGS",
-                    "SENTRY_MONITORING_SDK",
-                    "CRYPTED_CREDENTIALS",
-                    "MEDIA_EMAIL",
-                    "MEDIA_PASSWORD"
-                    ]
+            config = {
+                "FREEBOX_SERVER_IP": FREEBOX_SERVER_IP if crypted.lower() != "oui" else None,
+                "MEDIA_SELECT_TITLES": title_answer.lower() == "oui",
+                "MAX_SIM_RECORDINGS": int(max_sim_recordings),
+                "HTTPS": bool(https),
+                "SENTRY_MONITORING_SDK": record_logs.lower() == "oui",
+                "CRYPTED_CREDENTIALS": crypted.lower() == "oui",
+            }
 
-            with open(config_file, "w") as conf:
-                https_present = False
-                for param in params:
-                    if "ADMIN_PASSWORD" in param:
-                        if crypted.lower() == "oui":
-                            conf.write('ADMIN_PASSWORD = "XXXXXXX"\n')
-                        else:
-                            conf.write('ADMIN_PASSWORD = "' + freebox_os_password + '"\n')
-                    elif "FREEBOX_SERVER_IP" in param:
-                        if crypted.lower() == "oui":
-                            conf.write('FREEBOX_SERVER_IP = "XXXXXXX"\n')
-                        else:
-                            conf.write('FREEBOX_SERVER_IP = "' + FREEBOX_SERVER_IP + '"\n')
-                    elif "MEDIA_SELECT_TITLES" in param:
-                        if title_answer.lower() == "oui":
-                            conf.write("MEDIA_SELECT_TITLES = True\n")
-                        else:
-                            conf.write("MEDIA_SELECT_TITLES = False\n")
-                    elif "MAX_SIM_RECORDINGS" in param:
-                        conf.write("MAX_SIM_RECORDINGS = " + str(max_sim_recordings) + "\n")
-                    elif "HTTPS" in param:
-                        https_present = True
-                        if https:
-                            conf.write("HTTPS = True\n")
-                        else:
-                            conf.write("HTTPS = False\n")
-                    elif "SENTRY_MONITORING_SDK" in param:
-                        if record_logs.lower() == "oui":
-                            conf.write("SENTRY_MONITORING_SDK = True\n")
-                        else:
-                            conf.write("SENTRY_MONITORING_SDK = False\n")
-                    elif "CRYPTED_CREDENTIALS" in param:
-                        if crypted.lower() == "oui":
-                            conf.write("CRYPTED_CREDENTIALS = True\n")
-                        else:
-                            conf.write("CRYPTED_CREDENTIALS = False\n")
-                    elif "MEDIA_EMAIL" in param:
-                        if crypted.lower() == "oui":
-                            conf.write('MEDIA_EMAIL = "XXXXXXX"\n')
-                        else:
-                            conf.write('MEDIA_EMAIL = "' + username_mediaselect + '"\n')
-                    elif "MEDIA_PASSWORD" in param:
-                        if crypted.lower() == "oui":
-                            conf.write('MEDIA_PASSWORD = "XXXXXXX"\n')
-                        else:
-                            conf.write('MEDIA_PASSWORD = "' + password_mediaselect + '"\n')
-                    else:
-                        conf.write(param + "\n")
-                if not https_present:
-                    if https:
-                        conf.write("HTTPS = True\n")
-                    else:
-                        conf.write("HTTPS = False\n")
+            if crypted.lower() != "oui":
+                config["ADMIN_PASSWORD"] = freebox_os_password
+                config["MEDIA_EMAIL"] = username_mediaselect
+                config["MEDIA_PASSWORD"] = password_mediaselect
+            else:
+                config["ADMIN_PASSWORD"] = None
+                config["MEDIA_EMAIL"] = None
+                config["MEDIA_PASSWORD"] = None
 
+            with config_file.open("w", encoding="utf-8") as f:
+                json.dump(config, f, indent=4)
+
+            os.chmod(config_file, 0o600)
 
             if crypted.lower() == "oui":
                 print("\nVous avez choisi de chiffrer vos identifiants et ceux-ci seront donc stockés de "

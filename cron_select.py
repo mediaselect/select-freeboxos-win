@@ -1,4 +1,4 @@
-import importlib.util
+# import importlib.util
 import logging
 import json
 import keyring
@@ -17,16 +17,6 @@ local_appdata = Path(os.getenv("LOCALAPPDATA", Path.home() / "AppData" / "Local"
 app_dir = local_appdata / "select_freeboxos"
 log_dir = app_dir / "logs"
 log_file = log_dir / "select_freeboxos.log"
-config_file = app_dir / "config.py"
-
-# Dynamically import the config module
-spec = importlib.util.spec_from_file_location("config", str(config_file))
-config = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(config)
-
-CRYPTED_CREDENTIALS = config.CRYPTED_CREDENTIALS
-MEDIA_EMAIL = config.MEDIA_EMAIL
-MEDIA_PASSWORD = config.MEDIA_PASSWORD
 
 max_bytes = 10 * 1024 * 1024  # 10 MB
 backup_count = 5
@@ -47,6 +37,22 @@ logging.basicConfig(level=logging.INFO,
                     datefmt='%d-%m-%Y %H:%M:%S',
                     handlers=[log_handler])
 
+config_path = app_dir / "config.json"
+
+try:
+    with config_path.open(encoding="utf-8") as f:
+        config = json.load(f)
+except FileNotFoundError:
+    logging.error("Missing config.json file")
+    sys.exit(1)
+except json.JSONDecodeError:
+    logging.error("Invalid JSON in config.json")
+    sys.exit(1)
+
+CRYPTED_CREDENTIALS = bool(config.get("CRYPTED_CREDENTIALS", False))
+
+MEDIA_EMAIL = config.get("MEDIA_EMAIL")
+MEDIA_PASSWORD = config.get("MEDIA_PASSWORD")
 
 def get_file_modification_time(file_path):
     try:

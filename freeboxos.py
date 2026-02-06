@@ -1,4 +1,3 @@
-import importlib.util
 import json
 import keyring
 import logging
@@ -36,19 +35,7 @@ local_appdata = Path(os.getenv("LOCALAPPDATA", Path.home() / "AppData" / "Local"
 app_dir = local_appdata / "select_freeboxos"
 log_dir = app_dir / "logs"
 log_file = log_dir / "select_freeboxos.log"
-config_file = app_dir / "config.py"
-
-spec = importlib.util.spec_from_file_location("config", str(config_file))
-config = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(config)
-
-ADMIN_PASSWORD = config.ADMIN_PASSWORD
-FREEBOX_SERVER_IP = config.FREEBOX_SERVER_IP
-MEDIA_SELECT_TITLES = config.MEDIA_SELECT_TITLES
-MAX_SIM_RECORDINGS = config.MAX_SIM_RECORDINGS
-HTTPS = config.HTTPS
-SENTRY_MONITORING_SDK = config.SENTRY_MONITORING_SDK
-CRYPTED_CREDENTIALS = config.CRYPTED_CREDENTIALS
+config_path = app_dir / "config.json"
 
 month_names_fr = {
     '01': 'Jan',
@@ -119,18 +106,6 @@ def build_url(use_https, server_ip, path=""):
     full_url = protocol + server_ip + path
     return full_url
 
-if SENTRY_MONITORING_SDK:
-    sentry_sdk.init(
-        dsn="https://d76076ee97751a69bc5f1808501f93d4@o4508778574381056.ingest.de.sentry.io/4509219674849360",
-        traces_sample_rate=0,
-        send_default_pii=False,
-        include_local_variables=False,
-        before_send=scrub_event,
-    )
-    if sentry_sdk.Hub.current.client and sentry_sdk.Hub.current.client.options.get("traces_sample_rate", 0) > 0:
-        sentry_sdk.profiler.start_profiler()
-
-
 max_bytes = 10 * 1024 * 1024  # 10 MB
 backup_count = 5
 
@@ -164,6 +139,35 @@ logging.basicConfig(level=logging.INFO,
                     format=log_format,
                     datefmt=log_datefmt,
                     handlers=[log_handler, sentry_handler])
+
+try:
+    with config_path.open(encoding="utf-8") as f:
+        config = json.load(f)
+except FileNotFoundError:
+    logging.error("Missing config.json file")
+    raise RuntimeError("Missing config.json")
+except json.JSONDecodeError:
+    logging.error("Invalid JSON in config.json")
+    raise RuntimeError("Invalid config.json")
+
+ADMIN_PASSWORD = config.get("ADMIN_PASSWORD")
+FREEBOX_SERVER_IP = config.get("FREEBOX_SERVER_IP")
+MEDIA_SELECT_TITLES = config.get("MEDIA_SELECT_TITLES", [])
+MAX_SIM_RECORDINGS = int(config.get("MAX_SIM_RECORDINGS", 1))
+HTTPS = bool(config.get("HTTPS", True))
+SENTRY_MONITORING_SDK = bool(config.get("SENTRY_MONITORING_SDK", False))
+CRYPTED_CREDENTIALS = bool(config.get("CRYPTED_CREDENTIALS", False))
+
+if SENTRY_MONITORING_SDK:
+    sentry_sdk.init(
+        dsn="https://d76076ee97751a69bc5f1808501f93d4@o4508778574381056.ingest.de.sentry.io/4509219674849360",
+        traces_sample_rate=0,
+        send_default_pii=False,
+        include_local_variables=False,
+        before_send=scrub_event,
+    )
+    if sentry_sdk.Hub.current.client and sentry_sdk.Hub.current.client.options.get("traces_sample_rate", 0) > 0:
+        sentry_sdk.profiler.start_profiler()
 
 if CRYPTED_CREDENTIALS:
     try:
