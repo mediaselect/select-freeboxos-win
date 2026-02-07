@@ -40,20 +40,56 @@ opciones = ["1", "2", "3"]
 opcion = 5
 https = False
 
-print("\nBienvenu dans le programme d'installation pour enregistrer "
-      "automatiquement les vidéos qui vous correspondent dans votre "
-      "Freebox.\nVous pouvez vous connecter à Freebox OS soit par internet, "
-      "soit par votre réseau local. Par mesure de sécurité, le programme "
-      "utilisera uniquement des connexions par HTTPS pour se connecter par "
-      "internet. La connexion par le réseau local se fera en HTTP et n'est donc "
-      "pas sécurisé. Ceci ne pose pas de problème si votre PC est fixe et "
-      "qu'il reste toujours connecté à votre domicile dans votre réseau "
-      "local. Dans le cas contraire, il est conseillé de configurer "
-      "l'accès à distance à Freebox OS de manière sécurisée, avec un nom de domaine personnalisé: "
-      "https://www.universfreebox.com/article/36003/Tuto-Accedez-a-Freebox-OS-a-distance-de-maniere-securisee-avec-un-nom-de-domaine-personnalise\n"
-      "En plus de sécuriser votre connexion par HTTPS, ceci vous permettra de vous "
-      "connecter en déplacement.\n"
-      )
+print("""
+    Bienvenue dans le programme d’installation pour l’enregistrement automatique
+    de vos programmes TV sur votre Freebox.
+
+    Ce programme automatise l’accès à l’interface d’administration Freebox OS afin
+    de programmer des enregistrements sans intervention manuelle.
+
+    ────────────────────────────────────────────────────────
+    SÉCURITÉ ET MODE DE CONNEXION
+    ────────────────────────────────────────────────────────
+
+    Le programme peut se connecter à Freebox OS de deux manières :
+    - via le réseau local de votre domicile
+    - via Internet (accès distant)
+
+    ● Connexion sur le réseau local
+    Lorsque le programme est exécuté sur un ordinateur restant en permanence sur
+    votre réseau domestique, une connexion HTTP peut être utilisée.
+
+    Ce mode est acceptable uniquement si :
+    - l’ordinateur ne quitte jamais le réseau local
+    - le réseau est privé et de confiance
+
+    ● Connexion via Internet
+    Si l’ordinateur peut être utilisé sur d’autres réseaux (Wi-Fi public, travail,
+    déplacements), l’utilisation de HTTPS est obligatoire.
+
+    HTTPS chiffre les communications et empêche l’exposition du mot de passe
+    administrateur sur des réseaux non sécurisés.
+
+    Dans ce cas, il est conseillé de configurer l'accès à distance à Freebox OS de
+    manière sécurisée, avec un nom de domaine personnalisé :
+    https://www.universfreebox.com/article/36003/Tuto-Accedez-a-Freebox-OS-a-distance-de-maniere-securisee-avec-un-nom-de-domaine-personnalise
+
+    Cela permet :
+    - de sécuriser votre connexion via HTTPS
+    - de pouvoir accéder à Freebox OS en déplacement
+
+    ────────────────────────────────────────────────────────
+    PROTECTION AUTOMATIQUE
+    ────────────────────────────────────────────────────────
+
+    Pour éviter toute erreur de configuration ou d’utilisation involontaire :
+    - Les connexions HTTP sont autorisées uniquement lorsque la Freebox
+    résout vers une adresse IP privée (réseau local).
+    - Si l’adresse détectée est publique et que HTTPS est désactivé,
+    le programme s’arrête pour éviter l’exposition du mot de passe.
+    - un mode de sécurité stricte est activé par défaut
+
+    """)
 
 while opcion not in opciones:
     opcion = input("Merci de choisir une des options suivantes:\n\n1) J'ai "
@@ -441,6 +477,7 @@ if go_on:
                 "HTTPS": bool(https),
                 "SENTRY_MONITORING_SDK": record_logs.lower() == "oui",
                 "CRYPTED_CREDENTIALS": crypted.lower() == "oui",
+                "SECURITY_STRICT_MODE": True,
             }
 
             if crypted.lower() != "oui":
