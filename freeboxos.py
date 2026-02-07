@@ -33,6 +33,15 @@ from channels_free import CHANNELS_FREE
 from module_freeboxos import get_website_title
 from security_sanitizer import global_sanitizer, scrub_event
 
+ADMIN_PASSWORD = None
+FREEBOX_SERVER_IP = None
+MEDIA_SELECT_TITLES = []
+MAX_SIM_RECORDINGS = 1
+HTTPS = True
+SENTRY_MONITORING_SDK = False
+CRYPTED_CREDENTIALS = False
+SECURITY_STRICT_MODE = True
+
 local_appdata = Path(os.getenv("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
 app_dir = local_appdata / "select_freeboxos"
 log_dir = app_dir / "logs"
@@ -186,23 +195,6 @@ logging.basicConfig(level=logging.INFO,
                     datefmt=log_datefmt,
                     handlers=[log_handler, sentry_handler])
 
-try:
-    with config_path.open(encoding="utf-8") as f:
-        config = json.load(f)
-except FileNotFoundError:
-    logger.error("Missing config.json file")
-    raise RuntimeError("Missing config.json")
-except json.JSONDecodeError:
-    logger.error("Invalid JSON in config.json")
-    raise RuntimeError("Invalid config.json")
-
-ADMIN_PASSWORD = config.get("ADMIN_PASSWORD")
-FREEBOX_SERVER_IP = config.get("FREEBOX_SERVER_IP")
-MEDIA_SELECT_TITLES = config.get("MEDIA_SELECT_TITLES", [])
-MAX_SIM_RECORDINGS = int(config.get("MAX_SIM_RECORDINGS", 1))
-HTTPS = bool(config.get("HTTPS", True))
-SENTRY_MONITORING_SDK = bool(config.get("SENTRY_MONITORING_SDK", False))
-CRYPTED_CREDENTIALS = bool(config.get("CRYPTED_CREDENTIALS", False))
 
 def load_credentials():
     global FREEBOX_SERVER_IP, ADMIN_PASSWORD
