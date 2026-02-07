@@ -8,7 +8,6 @@ import sys
 
 from keyring.backends import Windows
 from pathlib import Path
-from subprocess import Popen, PIPE, run
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
 
@@ -61,7 +60,7 @@ def get_file_modification_time(file_path):
 def remove_items(INFO_PROGS, INFO_PROGS_LAST, PROGS_TO_RECORD):
     # Remove items already set to be recorded
     try:
-        with open(INFO_PROGS, 'r') as f:
+        with open(INFO_PROGS, 'r', encoding="utf-8") as f:
             source_data = json.load(f)
     except FileNotFoundError:
         logger.error(
@@ -77,14 +76,14 @@ def remove_items(INFO_PROGS, INFO_PROGS_LAST, PROGS_TO_RECORD):
         exit()
 
     try:
-        with open(INFO_PROGS_LAST, 'r') as f:
+        with open(INFO_PROGS_LAST, 'r', encoding="utf-8") as f:
             items_to_remove = json.load(f)
     except FileNotFoundError:
         items_to_remove = []
 
     modified_data = [item for item in source_data if item not in items_to_remove]
 
-    with open(PROGS_TO_RECORD, 'w') as f:
+    with open(PROGS_TO_RECORD, 'w', encoding="utf-8") as f:
         json.dump(modified_data, f, indent=4)
 
 API_URL = "https://www.media-select.fr/api/v1/progweek"
@@ -139,7 +138,7 @@ if info_progs_last_mod_time is None or info_progs_last_mod_time.date() < datetim
 
             response.raise_for_status()
 
-            with open(INFO_PROGS, "w") as f:
+            with open(INFO_PROGS, "w", encoding="utf-8") as f:
                 f.write(response.text)
 
             logger.info("Data downloaded with requests successfully.")

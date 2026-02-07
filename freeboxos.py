@@ -206,7 +206,7 @@ def run_freebox_operations():
 
     try:
         with open(
-            app_dir / "info_progs.json", "r"
+            app_dir / "info_progs.json", "r", encoding="utf-8"
         ) as jsonfile:
             data_info_progs = json.load(jsonfile)
     except FileNotFoundError:
@@ -223,7 +223,7 @@ def run_freebox_operations():
 
     try:
         with open(
-            app_dir / "progs_to_record.json", "r"
+            app_dir / "progs_to_record.json", "r", encoding="utf-8"
         ) as jsonfile:
             data = json.load(jsonfile)
     except FileNotFoundError:
@@ -352,7 +352,7 @@ def run_freebox_operations():
 
             try:
                 with open(
-                    app_dir / "info_progs_last.json", "r"
+                    app_dir / "info_progs_last.json", "r", encoding="utf-8"
                 ) as jsonfile:
                     data_last = json.load(jsonfile)
             except FileNotFoundError:
