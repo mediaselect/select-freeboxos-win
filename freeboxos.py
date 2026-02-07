@@ -412,7 +412,6 @@ def run_freebox_operations():
             login.click()
             sleep(1)
             login.send_keys(ADMIN_PASSWORD)
-            ADMIN_PASSWORD = None
             sleep(1)
             login.send_keys(Keys.RETURN)
             sleep(10)
@@ -677,9 +676,6 @@ def run_freebox_operations():
         logger.error("Exception type: %s", type(e).__name__)
         error_msg = str(e)[:100] if str(e) else "No error message"
         logger.error("Exception message: %s", error_msg)
-    finally:
-        ADMIN_PASSWORD = None
-
 
 if __name__ == "__main__":
     run_freebox_operations()
