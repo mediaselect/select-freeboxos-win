@@ -204,17 +204,6 @@ HTTPS = bool(config.get("HTTPS", True))
 SENTRY_MONITORING_SDK = bool(config.get("SENTRY_MONITORING_SDK", False))
 CRYPTED_CREDENTIALS = bool(config.get("CRYPTED_CREDENTIALS", False))
 
-if SENTRY_MONITORING_SDK:
-    sentry_sdk.init(
-        dsn="https://d76076ee97751a69bc5f1808501f93d4@o4508778574381056.ingest.de.sentry.io/4509219674849360",
-        traces_sample_rate=0,
-        send_default_pii=False,
-        include_local_variables=False,
-        before_send=scrub_event,
-    )
-    if sentry_sdk.Hub.current.client and sentry_sdk.Hub.current.client.options.get("traces_sample_rate", 0) > 0:
-        sentry_sdk.profiler.start_profiler()
-
 if CRYPTED_CREDENTIALS:
     try:
         keyring.set_keyring(Windows.WinVaultKeyring())
@@ -236,9 +225,55 @@ if CRYPTED_CREDENTIALS:
         logger.error("Exception type: %s", type(e).__name__)
         sys.exit(1)
 
+def load_config():
+    global ADMIN_PASSWORD, FREEBOX_SERVER_IP, MEDIA_SELECT_TITLES
+    global MAX_SIM_RECORDINGS, HTTPS, SENTRY_MONITORING_SDK
+    global CRYPTED_CREDENTIALS, SECURITY_STRICT_MODE
+
+    try:
+        with config_path.open(encoding="utf-8") as f:
+            config = json.load(f)
+    except FileNotFoundError:
+        raise RuntimeError("Missing config.json")
+    except json.JSONDecodeError:
+        raise RuntimeError("Invalid config.json")
+
+    ADMIN_PASSWORD = config.get("ADMIN_PASSWORD")
+    FREEBOX_SERVER_IP = config.get("FREEBOX_SERVER_IP")
+    MEDIA_SELECT_TITLES = config.get("MEDIA_SELECT_TITLES", [])
+    MAX_SIM_RECORDINGS = int(config.get("MAX_SIM_RECORDINGS", 1))
+    HTTPS = bool(config.get("HTTPS"))
+    SENTRY_MONITORING_SDK = bool(config.get("SENTRY_MONITORING_SDK"))
+    CRYPTED_CREDENTIALS = bool(config.get("CRYPTED_CREDENTIALS"))
+    SECURITY_STRICT_MODE = bool(config.get("SECURITY_STRICT_MODE", True))
+
+def validate_config():
+    if not FREEBOX_SERVER_IP:
+        raise RuntimeError("FREEBOX_SERVER_IP manquant dans config.json")
+
+    if ADMIN_PASSWORD is None:
+        raise RuntimeError("ADMIN_PASSWORD manquant dans config.json")
+
+    if not isinstance(MAX_SIM_RECORDINGS, int) or MAX_SIM_RECORDINGS < 1:
+        raise RuntimeError("MAX_SIM_RECORDINGS invalide")
+
+def init_sentry():
+    if SENTRY_MONITORING_SDK:
+        sentry_sdk.init(
+            dsn="https://d76076ee97751a69bc5f1808501f93d4@o4508778574381056.ingest.de.sentry.io/4509219674849360",
+            traces_sample_rate=0.0,
+            send_default_pii=False,
+            include_local_variables=False,
+            before_send=scrub_event,
+        )
+        if sentry_sdk.Hub.current.client and sentry_sdk.Hub.current.client.options.get("traces_sample_rate", 0) > 0:
+            sentry_sdk.profiler.start_profiler()
+
 def run_freebox_operations():
     """Run freebox.py"""
-    global ADMIN_PASSWORD
+    load_config()
+    validate_config()
+    init_sentry()
 
     if HTTPS is False:
         url = build_url(HTTPS, FREEBOX_SERVER_IP, "")
