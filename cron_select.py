@@ -130,7 +130,13 @@ if info_progs_last_mod_time is None or info_progs_last_mod_time.date() < datetim
             password = MEDIA_PASSWORD
 
         try:
-            response = requests.get(API_URL, auth=(username, password), headers={"Accept": "application/json; indent=4"})
+            response = requests.get(
+                        API_URL,
+                        auth=(username, password),
+                        headers={"Accept": "application/json; indent=4"},
+                        timeout=10,
+                    )
+
             response.raise_for_status()
 
             with open(INFO_PROGS, "w") as f:
