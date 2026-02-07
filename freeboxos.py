@@ -204,25 +204,32 @@ HTTPS = bool(config.get("HTTPS", True))
 SENTRY_MONITORING_SDK = bool(config.get("SENTRY_MONITORING_SDK", False))
 CRYPTED_CREDENTIALS = bool(config.get("CRYPTED_CREDENTIALS", False))
 
-if CRYPTED_CREDENTIALS:
+def load_credentials():
+    global FREEBOX_SERVER_IP, ADMIN_PASSWORD
+
+    if not CRYPTED_CREDENTIALS:
+        return
+
     try:
         keyring.set_keyring(Windows.WinVaultKeyring())
         FREEBOX_SERVER_IP = keyring.get_password("freeboxos", "username")
         ADMIN_PASSWORD = keyring.get_password("freeboxos", "password")
+
         if FREEBOX_SERVER_IP is None:
-            logger.error("Failed to retrieve 'username' from keyring for 'freeboxos'.")
-            sys.exit(1)
+            raise RuntimeError("Failed to retrieve username from keyring")
+
         if ADMIN_PASSWORD is None:
-            logger.error("Failed to retrieve 'password' from keyring for 'freeboxos'.")
-            sys.exit(1)
+            raise RuntimeError("Failed to retrieve password from keyring")
+
         sensitive_filter.update_patterns({
             "admin_password": ADMIN_PASSWORD,
             "freebox_ip": FREEBOX_SERVER_IP,
         })
 
     except Exception as e:
-        logger.error("An error occurred while retrieving credentials from keyring.")
-        logger.error("Exception type: %s", type(e).__name__)
+        logger.critical(
+            "Impossible de récupérer les identifiants chiffrés depuis le trousseau Windows"
+        )
         sys.exit(1)
 
 def load_config():
@@ -272,6 +279,7 @@ def init_sentry():
 def run_freebox_operations():
     """Run freebox.py"""
     load_config()
+    load_credentials()
     validate_config()
     init_sentry()
 
