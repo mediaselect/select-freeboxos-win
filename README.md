@@ -1,73 +1,218 @@
-# 🖥️ Installation de Select FreeboxOS (Windows)
-# select-freeboxos-win v2.0.0:
+# 📺 select-freeboxos-win v2.0.0
 
-## Instructions d'installation:
+> 📡 Turn your Freebox into an automated recording system
+> 🎯 Automatically schedule TV recordings via Freebox OS
 
-Voir les instructions d'installation détaillés sur la page de votre compte à l'adresse www.media-select.fr
+![Python](https://img.shields.io/badge/Python-3.10+-blue)
+![Platform](https://img.shields.io/badge/Platform-Windows-blue)
+![Architecture](https://img.shields.io/badge/Arch-x86-orange)
+![Status](https://img.shields.io/badge/Status-Active-success)
+![Self-hosted](https://img.shields.io/badge/Self--Hosted-Yes-blueviolet)
+![Dependency](https://img.shields.io/badge/Requires-Freebox%20OS-lightgrey)
 
-Ce programme lance automatiquement un script Python à chaque démarrage de Windows.
+---
 
-## 🔧 Prérequis
+## 🍿 How TV Select works
 
-- Python 3 doit être installé sur votre machine : [https://www.python.org/downloads/](https://www.python.org/downloads/)
-- Droits administrateur nécessaires
+TV Select turns TV into a **personal discovery engine**.
 
-## 📦 Installation
+You define what you care about:
 
-1. **Téléchargez** et **décompressez** l'archive `select-freeboxos-win-master.zip` (par exemple dans `Téléchargements`).
+* a documentary about wine 🍷
+* a history episode 🏛️
+* a space report 🚀
+* that rare movie you couldn’t find anywhere 🎬
+* a tennis documentary your son will love 🎾
 
-2. **Ouvrez PowerShell en tant qu’administrateur** :
-   - Démarrer > Rechercher "PowerShell"
-   - Clic droit > Exécuter en tant qu'administrateur
+Then the system works for you:
 
-3. **Accédez au dossier extrait** :
-   ```powershell
-   cd "$HOME\Downloads\select-freeboxos-win-master"
+1. 🔍 Your searches are analyzed
+2. 🧠 TV programs are continuously scanned
+3. 🎯 When a match is found:
 
-4. **Lancez le script d’installation** :
-    ```powershell
-    .\setup.ps1
+   * 📧 You receive a notification
+   * 📼 A recording is triggered automatically
 
-## Sécurité et modes de connexion
+👉 No manual searching. No scheduling.
 
-Ce programme automatise l’accès à l’interface **Freebox OS** afin de programmer
-des enregistrements TV sans intervention manuelle.
-Il manipule des **identifiants administrateur sensibles**. Une attention
-particulière est donc portée à la sécurité.
+---
 
+## 📖 TV Select Ecosystem
 
-### Modes de connexion
+This project is part of the **TV Select ecosystem**.
 
-Le programme peut fonctionner dans trois contextes distincts :
+👉 Overview & setup guide:
 
-#### 🟢 Mode local (recommandé)
-- Exécution sur un ordinateur **toujours présent sur le réseau domestique**
-- Connexion directe à la Freebox via le réseau local
-- HTTP autorisé uniquement dans ce contexte
+[![TV Select Ecosystem](https://img.shields.io/badge/TV%20Select-Ecosystem-blue)](https://github.com/tv-select)
 
-Conditions :
-- réseau privé et de confiance
-- machine non utilisée hors du domicile
+## 📡 About select-freeboxos-win
 
-#### 🟡 Mode distant sécurisé
-- Exécution possible depuis des réseaux externes
-- **HTTPS obligatoire**
-- Communications chiffrées
-- Risque maîtrisé
+select-freeboxos-win does **not record videos directly**.
 
-Ce mode est requis si l’ordinateur est portable ou utilisé en déplacement.
+👉 Instead, it:
 
-#### 🔴 Mode distant non sécurisé (déconseillé / bloqué)
-- Connexion HTTP depuis Internet ou un réseau public
-- Exposition possible du mot de passe administrateur
+- connects to **Freebox OS**
+- automatically **schedules recordings**
+- lets the Freebox handle the recording
 
-Ce mode est **automatiquement bloqué** par le programme.
+---
 
-### Protection automatique
+## ⚡ Key features
 
-Par défaut, le programme active un **mode de sécurité stricte** :
+- 📡 Automatic recording scheduling via Freebox OS
+- 💾 Record directly on Freebox internal or USB storage
+- 🧠 Uses MEDIA-select API for program detection
+- 🤖 Browser automation (Selenium)
+- 🔄 Runs automatically at Windows startup
+- ⚙️ Fully automated once configured
 
-- Les connexions HTTP sont autorisées uniquement lorsque la Freebox
-résout vers une adresse IP privée (réseau local).
-- Si l’adresse détectée est publique et que HTTPS est désactivé,
-le programme s’arrête pour éviter l’exposition du mot de passe.
+---
+
+## 🧩 How it works
+
+Search → Match → Schedule (Freebox OS) → Record → Watch
+
+---
+
+## 🏠 Freebox OS integration
+
+This application uses the **recording feature of Freebox OS**.
+
+- Recordings are stored on the Freebox
+- No local video storage required on your PC
+
+👉 Important:
+
+- Your PC must be started regularly (at least once every 7 days)
+- TV program data is available up to 7 days ahead
+
+💡 For a fully automated setup, consider using a dedicated machine (SBC / VM).
+
+---
+
+## 📁 Output
+
+Videos are stored directly on your Freebox.
+
+Accessible via:
+
+- Freebox OS interface
+- Network shares (SMB)
+- Connected devices (TV, media players)
+
+---
+
+## ⚡ Installation
+
+### Requirements
+
+- Windows 10 / 11
+- Python 3.9+
+- Freebox OS (version ≥ 4.7)
+- Account on https://www.media-select.fr
+
+---
+
+### Install
+
+Download and extract the project:
+
+select-freeboxos-win-master.zip
+
+---
+
+### Setup
+
+Open PowerShell as administrator and run:
+
+cd "$HOME\Downloads\select-freeboxos-win-master\select-freeboxos-win-master"
+
+Set-ExecutionPolicy Bypass -Scope Process ; ./setup.ps1
+
+---
+
+### Configure
+
+Run:
+
+C:\Venvs\select_freeboxos\Scripts\python.exe C:\Apps\select_freeboxos\install.py
+
+Then:
+
+- Enter your Freebox OS admin password
+- Enter your MEDIA-select credentials
+
+---
+
+## 🔐 Security
+
+This application interacts with **Freebox OS using your admin credentials**.
+
+### 🟢 Local usage (recommended)
+
+- Runs on a device within your home network
+- Connects directly to your Freebox using local addresses (e.g. `192.168.1.254`, `mafreebox.freebox.fr`)
+- HTTP is allowed only in this context
+
+### 🟡 Remote usage (secure)
+
+- Remote access is possible **only with HTTPS enabled**
+- Connections over HTTP outside the local network are **blocked automatically**
+- A warning is displayed when a remote connection is detected
+
+### 🔴 Unsafe configurations
+
+- Remote HTTP connections are **blocked by the application**
+- This prevents exposure of your Freebox admin credentials
+
+---
+
+💡 By default, the application enforces security rules based on the network context.
+
+## ⏳ What to expect
+
+- ❌ No immediate results
+- ⏳ Wait for matches
+- 🎯 Recordings are scheduled automatically
+- 📼 Videos are recorded by the Freebox
+
+---
+
+## 🧩 Architecture
+
+Search → Match → Freebox OS → Schedule → Record → Watch
+
+---
+
+## 🤔 When should you use select-freeboxos-win?
+
+Use this version if:
+
+- you use a Windows PC
+- you want a simple setup without dedicated hardware
+- you start your PC regularly (at least weekly)
+
+---
+
+## ⚠️ Limitations
+
+- Requires Freebox OS
+- Requires Windows session startup
+- Requires periodic usage (at least once every 7 days)
+- Relies on browser automation (Selenium)
+
+---
+
+## ⭐ Support
+
+If you like this project:
+
+- ⭐ Star it
+- 🔁 Share it
+- 🧠 Use it
+
+---
+
+## ⚠️ Disclaimer
+
+For personal use only.
