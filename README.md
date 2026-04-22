@@ -1,7 +1,11 @@
 # 📺 select-freeboxos-win v2.0.0
 
-> 📡 Turn your Freebox into an automated recording system
-> 🎯 Automatically schedule TV recordings via Freebox OS
+📡 Turn your Freebox into an automated recording system  
+🎯 Automatically schedule TV recordings via Freebox OS
+
+![Demo](docs/demo-select-freeboxos.gif)
+
+---
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue)
 ![Platform](https://img.shields.io/badge/Platform-Windows-blue)
@@ -125,9 +129,11 @@ select-freeboxos-win-master.zip
 
 Open PowerShell as administrator and run:
 
+```bash id="pathvid"
 cd "$HOME\Downloads\select-freeboxos-win-master\select-freeboxos-win-master"
 
 Set-ExecutionPolicy Bypass -Scope Process ; ./setup.ps1
+```
 
 ---
 
@@ -135,7 +141,9 @@ Set-ExecutionPolicy Bypass -Scope Process ; ./setup.ps1
 
 Run:
 
+```bash id="install"
 C:\Venvs\select_freeboxos\Scripts\python.exe C:\Apps\select_freeboxos\install.py
+```
 
 Then:
 
